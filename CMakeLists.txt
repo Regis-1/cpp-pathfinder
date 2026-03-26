@@ -9,7 +9,8 @@ project(
 # library first
 add_library(
   pathfinder STATIC
-  src/lib.cpp
+  src/Pathfinder.cpp
+  src/Map.cpp
 )
 
 target_include_directories(
@@ -21,6 +22,8 @@ target_include_directories(
 add_executable(
   visualizer
   src/main.cpp
+  src/Application.cpp
+  src/Renderer.cpp
 )
 
 find_package(SDL3 REQUIRED)
