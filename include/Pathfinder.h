@@ -1,37 +1,54 @@
 #pragma once
 
-#include <array>
 #include <vector>
 #include <functional>
 
 #include "Map.h"
+#include "MinHeap.hpp"
+
+struct NodeRecord
+{
+    int index;
+    float f;
+
+    bool operator<(const NodeRecord &other) const
+    {
+	return this->f < other.f;
+    }
+
+    bool operator<=(const NodeRecord &other) const
+    {
+	return this->f <= other.f;
+    }
+};
+
+using HeuristicFn = std::function<float(const Coord&, const Coord&)>;
 
 class Pathfinder
 {
 public:
-    // Pathfinder(const Map *map, HeuristicFn heuristic);
+    Pathfinder(Map &map, HeuristicFn heuristic);
 
-    // Path a_star(const Node &start, const Node &end);
+    void set_points(const Coord &start, const Coord &goal);
+    void reset();
 
-    // void init(const Node &start, const Node &end);
-    // bool a_star_step();
+    std::vector<int> a_star();
+    bool a_star_step();
 
-    // void update_heuristic(HeuristicFn new_heuristic);
-    // void update_map(const Map *new_map);
-
-    // const std::vector<Node>& get_open_set() const;
-    // const std::vector<Node>& get_closed_set() const;
-    // const Path& get_path() const;
+    void update_heuristic(HeuristicFn new_heuristic);
 
 private:
-    const Map *map;
-    // HeuristicFn heuristic;
+    std::vector<int> get_neighbors(int index);
 
-    // std::vector<Node> open_set;
-    // std::vector<Node> closed_set;
+    Map &map;
+    int start;
+    int goal;
 
-    // Path path;
+    HeuristicFn heuristic;
 
-    int start[2];
-    int end[2];
+    MinHeap<NodeRecord> open_set;
+
+    std::vector<bool> close_set;
+    std::vector<float> g_score;
+    std::vector<int> came_from;
 };
