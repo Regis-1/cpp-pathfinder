@@ -4,20 +4,22 @@
 
 namespace
 {
-    void draw_grid_map(const int x, const int y, const Map &map, Renderer &renderer)
+    void draw_grid_map(const int x, const int y, Map &map, Renderer &renderer)
     {
         for (int i = 0; i < map.size(); ++i)
         {
-            if (map[i].type == NodeType::Empty)
+            if (map[i] == NodeType::Empty)
             {
                 renderer.set_draw_color(0xBB, 0xBB, 0xBB, 0xFF);
             }
-            else if (map[i].type == NodeType::Wall)
+            else if (map[i] == NodeType::Wall)
             {
                 renderer.set_draw_color(0x15, 0x15, 0x15, 0xFF);
             }
 
-            renderer.draw_tile(x + (32+4)*map[i].x, y + (32+4)*(-map[i].y));
+	    Coord c = map.to_coord(i);
+
+            renderer.draw_tile(x + (32+4) * c.col, y + (32+4) * c.row);
         }
     }
 }
@@ -65,12 +67,9 @@ bool Application::init()
 void Application::run()
 {
     Map map(3, 3,
-            std::vector<Node>(
-                {{0, 0, NodeType::Empty}, {1, 0, NodeType::Wall}, {2, 0, NodeType::Empty},
-                {0, -1, NodeType::Empty}, {1, -1, NodeType::Empty}, {2, -1, NodeType::Wall},
-                {0, -2, NodeType::Wall}, {1, -2, NodeType::Wall}, {2, -2, NodeType::Empty}}
-            )
-    );
+	    std::vector<NodeType>{NodeType::Empty, NodeType::Wall, NodeType::Empty,
+				  NodeType::Empty, NodeType::Wall, NodeType::Empty,
+				  NodeType::Empty, NodeType::Empty, NodeType::Wall});
 
     SDL_Event event;
     bool should_quit {false};

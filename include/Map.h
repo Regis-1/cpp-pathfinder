@@ -11,29 +11,28 @@ enum class NodeType
     Goal
 };
 
-struct Node
+struct Coord
 {
-    int x;
-    int y;
-    NodeType type;
+    int row;
+    int col;
 };
 
 class Map
 {
 public:
-    Map() = delete;
-    Map(const int w, const int h, std::vector<Node> &&nodes);
+    Map(int w, int h, std::vector<NodeType> n);
 
-    int index(const int x, const int y) const;
-    Node& at(const int x, const int y);
-    int size() const;
+    Coord to_coord(const int index);
+    int to_index(const Coord coord);
 
-    Node& operator[](size_t index);
-    const Node& operator[](size_t index) const;
+    const int size() const;
+
+    const NodeType& operator[](size_t index) const;
+    NodeType& operator[](size_t index);
+
+    int width;
+    int height;
 
 private:
-    std::vector<Node> nodes;
-
-    int width, height;
-    int origin_x, origin_y;
+    std::vector<NodeType> nodes;
 };
