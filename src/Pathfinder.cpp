@@ -102,17 +102,20 @@ std::vector<int> Pathfinder::get_neighbors(int index)
 {
     std::vector<int> neighbors;
 
-    int row = index / this->map.width;
-    int col = index % this->map.width;
+    int w = this->map.get_width();
+    int h = this->map.get_height();
+
+    int row = index / w;
+    int col = index % w;
 
     if (row > 0)
     {
-	neighbors.push_back(index - this->map.width);
+	neighbors.push_back(index - w);
     }
 
-    if (row + 1 < this->map.height)
+    if (row + 1 < h)
     {
-	neighbors.push_back(index + this->map.width);
+	neighbors.push_back(index + w);
     }
 
     if (col > 0)
@@ -120,7 +123,7 @@ std::vector<int> Pathfinder::get_neighbors(int index)
 	neighbors.push_back(index - 1);
     }
 
-    if (col + 1 < this->map.width)
+    if (col + 1 < w)
     {
 	neighbors.push_back(index + 1);
     }
