@@ -1,12 +1,50 @@
 #include <cassert>
+#include <fstream>
 
 #include "Map.h"
+
+namespace
+{
+    void load_map_from_file(const std::string &path, int &w, int &h,
+			    std::vector<NodeType> &nodes)
+    {
+	assert(!path.empty());
+
+	std::ifstream map_file(path);
+
+	map_file >> w;
+	map_file >> h;
+
+	int type = 0;
+	while(map_file >> type)
+	{
+	    if (type == 0)
+	    {
+		nodes.push_back(NodeType::Empty);
+	    }
+	    else if (type == 1)
+	    {
+		nodes.push_back(NodeType::Wall);
+	    }
+	}
+
+	map_file.close();
+	assert(nodes.size() == w * h);
+    }
+}
 
 Map::Map(int w, int h, int tile_size, int tile_offset, std::vector<NodeType> n)
     : width(w), height(h), tile_size(tile_size), tile_offset(tile_offset),
       nodes(std::move(n)), start_set(false), goal_set(false)
 {
     assert(this->nodes.size() == this->width * this->height);
+}
+
+Map::Map(const std::string &&path, int tile_size, int tile_offset)
+    : tile_size(tile_size), tile_offset(tile_offset),
+      start_set(false), goal_set(false)
+{
+    load_map_from_file(path, this->width, this->height, this->nodes);
 }
 
 Coord Map::to_coord(const int index) const

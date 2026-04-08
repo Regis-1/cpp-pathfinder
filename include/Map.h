@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <string>
 
 enum class NodeType
 {
@@ -21,6 +22,7 @@ class Map
 {
 public:
     Map(int w, int h, int tile_size, int tile_offset, std::vector<NodeType> n);
+    Map(const std::string &&path, int tile_size, int tile_offset);
 
     Coord to_coord(const int index) const;
     int to_index(const Coord coord) const;

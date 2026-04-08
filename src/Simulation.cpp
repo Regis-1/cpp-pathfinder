@@ -1,12 +1,7 @@
 #include "Simulation.h"
 
 Simulation::Simulation()
-    : map(3, 5, 32, 4,
-	  std::vector<NodeType>{NodeType::Empty, NodeType::Wall, NodeType::Empty,
-				NodeType::Empty, NodeType::Wall, NodeType::Empty,
-				NodeType::Empty, NodeType::Empty, NodeType::Empty,
-				NodeType::Empty, NodeType::Empty, NodeType::Empty,
-				NodeType::Empty, NodeType::Empty, NodeType::Wall})
+    : map("starter_map.txt", 32, 4)
 {
 }
 
