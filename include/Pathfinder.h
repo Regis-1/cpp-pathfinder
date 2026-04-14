@@ -13,12 +13,12 @@ struct NodeRecord
 
     bool operator<(const NodeRecord &other) const
     {
-	return this->f < other.f;
+        return this->f < other.f;
     }
 
     bool operator<=(const NodeRecord &other) const
     {
-	return this->f <= other.f;
+        return this->f <= other.f;
     }
 };
 

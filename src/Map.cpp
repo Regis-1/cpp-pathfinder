@@ -6,30 +6,30 @@
 namespace
 {
     void load_map_from_file(const std::string &path, int &w, int &h,
-			    std::vector<NodeType> &nodes)
+                            std::vector<NodeType> &nodes)
     {
-	assert(!path.empty());
+        assert(!path.empty());
 
-	std::ifstream map_file(path);
+        std::ifstream map_file(path);
 
-	map_file >> w;
-	map_file >> h;
+        map_file >> w;
+        map_file >> h;
 
-	int type = 0;
-	while(map_file >> type)
-	{
-	    if (type == 0)
-	    {
-		nodes.push_back(NodeType::Empty);
-	    }
-	    else if (type == 1)
-	    {
-		nodes.push_back(NodeType::Wall);
-	    }
-	}
+        int type = 0;
+        while(map_file >> type)
+        {
+            if (type == 0)
+            {
+                nodes.push_back(NodeType::Empty);
+            }
+            else if (type == 1)
+            {
+                nodes.push_back(NodeType::Wall);
+            }
+        }
 
-	map_file.close();
-	assert(nodes.size() == w * h);
+        map_file.close();
+        assert(nodes.size() == w * h);
     }
 }
 
