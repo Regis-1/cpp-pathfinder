@@ -4,6 +4,11 @@ namespace
 {
     void draw_grid_map(const int x, const int y, const Map &map, Renderer &renderer)
     {
+        int tile_size = map.get_tile_size();
+        int tile_offset = map.get_tile_offset();
+
+        renderer.set_tile_size(tile_size);
+
         for (int i = 0; i < map.size(); ++i)
         {
             if (map[i] == NodeType::Empty)
@@ -25,19 +30,42 @@ namespace
 
             Coord c = map.to_coord(i);
 
-            renderer.draw_tile(x + (map.get_tile_size() + map.get_tile_offset())
-                               * c.col,
-                               y + (map.get_tile_size() + map.get_tile_offset())
-                               * c.row);
+            renderer.draw_tile(x + (tile_size + tile_offset) * c.col,
+                               y + (tile_size + tile_offset) * c.row);
+        }
+    }
+
+    void draw_path(const int x, const int y, const Map &map,
+                   const std::vector<int> &path, Renderer &renderer)
+    {
+        int tile_size = map.get_tile_size() - 16;
+        int tile_offset = map.get_tile_offset() + 16;
+
+        renderer.set_tile_size(tile_size);
+
+        renderer.set_draw_color(0x33, 0x33, 0x33, 0xFF);
+
+        for (int i = 0; i < path.size(); ++i)
+        {
+            if (i == 0 || i == path.size() - 1)
+            {
+                continue;
+            }
+
+            Coord c = map.to_coord(path[i]);
+
+            renderer.draw_tile(x + (tile_size + tile_offset) * c.col + 8,
+                               y + (tile_size + tile_offset) * c.row + 8);
         }
     }
 }
 
 
 Application::Application(const std::string &&title, const int &&width, const int &&height)
-    : title(title), screen_width(width), screen_height(height)
+    : title(title), screen_width(width), screen_height(height),
+      renderer(this->simulation.get_map().get_tile_size())
 {
-    this->input_state = InputState {0, 0, NodeType::Empty, false, false};
+    this->input_state = InputState {0, 0, NodeType::Empty, false, false, false};
 }
 
 bool Application::init()
@@ -87,6 +115,12 @@ void Application::run()
 
         this->renderer.clear_screen();
         draw_grid_map(0, 0, this->simulation.get_map(), this->renderer);
+
+        if (!this->simulation.get_path().empty())
+        {
+            draw_path(0, 0, this->simulation.get_map(), this->simulation.get_path(), this->renderer);
+        }
+
         this->renderer.render();
     }
 }
@@ -131,6 +165,10 @@ void Application::process_events(SDL_Event *e)
             else if (e->key.key == SDLK_G)
             {
                 this->input_state.selected_tile_type = NodeType::Goal;
+            }
+            else if (e->key.key == SDLK_R)
+            {
+                this->input_state.simulation_run = true;
             }
         }
     }

@@ -1,8 +1,25 @@
 #include "Simulation.h"
 
-Simulation::Simulation()
-    : map("starter_map.txt", 32, 4)
+#include <cassert>
+
+namespace
 {
+    float manhattan_hfn(const Coord& node, const Coord& goal)
+    {
+        return 0.0f;
+    }
+}
+
+Simulation::Simulation()
+    : map("starter_map.txt", 32, 4), running(false), path_computed(false),
+      pf(nullptr)
+{
+    this->pf = new Pathfinder(this->map, manhattan_hfn);
+}
+
+Simulation::~Simulation()
+{
+    delete pf;
 }
 
 void Simulation::process_input(InputState &is)
@@ -53,17 +70,51 @@ void Simulation::process_input(InputState &is)
 
         }
 
+        if (!this->path.empty())
+        {
+            this->path.clear();
+        }
+
         is.mouse_button_down = false;
+    }
+
+    if (is.simulation_run)
+    {
+        is.simulation_run = false;
+
+        if (!this->map.is_start_set() || !this->map.is_goal_set())
+        {
+            return;
+        }
+
+        Endpoints ep = this->find_start_and_goal();
+
+        this->pf->set_points(ep.start, ep.goal);
+
+        this->running = true;
     }
 }
 
 void Simulation::update()
 {
+    if (this->running)// && !this->path_computed)
+    {
+        this->path = this->pf->a_star();
+        this->pf->reset();
+
+        //this->path_computed = true;
+        this->running = false;
+    }
 }
 
 const Map& Simulation::get_map() const
 {
-    return map;
+    return this->map;
+}
+
+const std::vector<int>& Simulation::get_path() const
+{
+    return this->path;
 }
 
 const bool Simulation::in_boundries(const int x, const int y) const
@@ -80,4 +131,26 @@ const bool Simulation::in_boundries(const int x, const int y) const
     }
 
     return true;
+}
+
+Endpoints Simulation::find_start_and_goal()
+{
+    Endpoints endpoints;
+    bool found[2] = {false, false};
+
+    for (int i = 0; i < map.size(); ++i)
+    {
+        if (map[i] == NodeType::Start)
+        {
+            found[0] = true;
+            endpoints.start = this->map.to_coord(i);
+        }
+        else if(map[i] == NodeType::Goal)
+        {
+            found[1] = true;
+            endpoints.goal = this->map.to_coord(i);
+        }
+    }
+
+    return endpoints;
 }

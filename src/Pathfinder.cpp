@@ -70,6 +70,7 @@ std::vector<int> Pathfinder::a_star()
                 continue;
             }
 
+            // +1.0f as each travelable tile is equal in movement terms
             float tentative_g = g_score[current.index] + 1.0f;
 
             if (tentative_g < g_score[neighbor])
@@ -89,18 +90,20 @@ std::vector<int> Pathfinder::a_star()
 }
 
 
-bool Pathfinder::a_star_step()
+bool Pathfinder::a_star_step() // NOT IMPLEMENTED YET!
 {
     return false;
 }
 
-void Pathfinder::update_heuristic(HeuristicFn new_heuristic)
+void Pathfinder::set_heuristic(HeuristicFn new_heuristic)
 {
+    this->heuristic = new_heuristic;
 }
 
 std::vector<int> Pathfinder::get_neighbors(int index)
 {
     std::vector<int> neighbors;
+    neighbors.reserve(4);
 
     int w = this->map.get_width();
     int h = this->map.get_height();
@@ -108,24 +111,23 @@ std::vector<int> Pathfinder::get_neighbors(int index)
     int row = index / w;
     int col = index % w;
 
-    if (row > 0)
-    {
-        neighbors.push_back(index - w);
-    }
+    const int d_row[] = { -1, 1, 0, 0 };
+    const int d_col[] = { 0, 0, -1, 1 };
 
-    if (row + 1 < h)
+    for (int i = 0; i < 4; ++i)
     {
-        neighbors.push_back(index + w);
-    }
+        int new_row = row + d_row[i];
+        int new_col = col + d_col[i];
 
-    if (col > 0)
-    {
-        neighbors.push_back(index - 1);
-    }
+        if (new_row >= 0 && new_row < h && new_col >= 0 && new_col < w)
+        {
+            int new_index = new_row * w + new_col;
 
-    if (col + 1 < w)
-    {
-        neighbors.push_back(index + 1);
+            if (this->map[new_index] != NodeType::Wall)
+            {
+                neighbors.push_back(new_index);
+            }
+        }
     }
 
     return neighbors;

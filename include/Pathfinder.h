@@ -33,9 +33,9 @@ public:
     void reset();
 
     std::vector<int> a_star();
-    bool a_star_step();
+    bool a_star_step(); // NOT IMPLEMENTED YET!
 
-    void update_heuristic(HeuristicFn new_heuristic);
+    void set_heuristic(HeuristicFn new_heuristic);
 
 private:
     std::vector<int> get_neighbors(int index);
