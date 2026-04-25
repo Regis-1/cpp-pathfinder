@@ -1,10 +1,13 @@
 #pragma once
 
 #include <string>
-#include <SDL3/SDL.h>
 
 #include "Renderer.h"
 #include "Simulation.h"
+#include "UI.h"
+
+union SDL_Event;
+class SDL_Window;
 
 class Application
 {
@@ -28,4 +31,6 @@ private:
     Renderer renderer;
 
     InputState input_state;
+
+    UI *ui;
 };

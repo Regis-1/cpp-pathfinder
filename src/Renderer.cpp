@@ -7,6 +7,7 @@ Renderer::Renderer(const unsigned int tile_size)
 Renderer::~Renderer()
 {
     SDL_DestroyRenderer(this->renderer);
+    this->renderer = nullptr;
 }
 
 bool Renderer::init(SDL_Window *window)
@@ -17,6 +18,7 @@ bool Renderer::init(SDL_Window *window)
         return false;
     }
 
+    SDL_SetRenderVSync(this->renderer, 1);
     return true;
 }
 
@@ -48,4 +50,9 @@ void Renderer::set_draw_color(const short r, const short g, const short b, const
 void Renderer::set_tile_size(const unsigned int new_size)
 {
     this->tile_size = new_size;
+}
+
+SDL_Renderer* Renderer::get_renderer()
+{
+    return this->renderer;
 }

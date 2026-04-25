@@ -25,6 +25,7 @@ add_executable(
   src/Application.cpp
   src/Renderer.cpp
   src/Simulation.cpp
+  src/UI.cpp
 )
 
 find_package(SDL3 REQUIRED)

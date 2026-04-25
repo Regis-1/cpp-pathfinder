@@ -1,3 +1,5 @@
+#include <SDL3/SDL.h>
+
 #include "Application.h"
 
 namespace
@@ -63,13 +65,15 @@ namespace
 
 Application::Application(const std::string &&title, const int &&width, const int &&height)
     : title(title), screen_width(width), screen_height(height),
-      renderer(this->simulation.get_map().get_tile_size())
+      renderer(this->simulation.get_map().get_tile_size()), ui(nullptr)
 {
     this->input_state = InputState {0, 0, NodeType::Empty, false, false, false};
 }
 
 bool Application::init()
 {
+    float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -100,6 +104,8 @@ bool Application::init()
         return false;
     }
 
+    this->ui = new UI(this->window, this->renderer.get_renderer());
+
     return true;
 }
 
@@ -108,18 +114,25 @@ void Application::run()
     SDL_Event event;
     while (!input_state.exit)
     {
+        // PROCESSING EVENTS / INPUT
         process_events(&event);
-
         this->simulation.process_input(this->input_state);
+
+        // UPDATING
         this->simulation.update();
 
+        // RENDERING
         this->renderer.clear_screen();
         draw_grid_map(0, 0, this->simulation.get_map(), this->renderer);
 
         if (!this->simulation.get_path().empty())
         {
-            draw_path(0, 0, this->simulation.get_map(), this->simulation.get_path(), this->renderer);
+            draw_path(0, 0, this->simulation.get_map(),
+                      this->simulation.get_path(),
+                      this->renderer);
         }
+
+        this->ui->draw_and_process(this->input_state);
 
         this->renderer.render();
     }
@@ -136,6 +149,10 @@ void Application::process_events(SDL_Event *e)
 {
     while (SDL_PollEvent(e))
     {
+        // EXPERIMENTAL - IMGUI
+        ui->process_events(e);
+        //
+
         if (e->type == SDL_EVENT_QUIT)
         {
             this->input_state.exit = true;
@@ -146,29 +163,14 @@ void Application::process_events(SDL_Event *e)
             this->input_state.mouse_button_down = true;
             this->input_state.x = e->button.x;
             this->input_state.y = e->button.y;
-        }
 
-        else if (e->type == SDL_EVENT_KEY_DOWN)
-        {
-            if (e->key.key == SDLK_W)
+            if (e->button.button == SDL_BUTTON_LEFT)
             {
-                this->input_state.selected_tile_type = NodeType::Wall;
+                this->input_state.selected_tile_type = static_cast<NodeType>(this->ui->get_current_tile() + 1);
             }
-            else if (e->key.key == SDLK_E)
+            else if (e->button.button == SDL_BUTTON_RIGHT)
             {
                 this->input_state.selected_tile_type = NodeType::Empty;
-            }
-            else if (e->key.key == SDLK_S)
-            {
-                this->input_state.selected_tile_type = NodeType::Start;
-            }
-            else if (e->key.key == SDLK_G)
-            {
-                this->input_state.selected_tile_type = NodeType::Goal;
-            }
-            else if (e->key.key == SDLK_R)
-            {
-                this->input_state.simulation_run = true;
             }
         }
     }

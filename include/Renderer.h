@@ -18,6 +18,8 @@ public:
     void set_draw_color(const short r, const short g, const short b, const short a);
     void set_tile_size(const unsigned int new_size);
 
+    SDL_Renderer* get_renderer();
+
 private:
     SDL_Renderer *renderer;
     unsigned int tile_size;
