@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "InputState.h"
 #include "Renderer.h"
 #include "Simulation.h"
 #include "UI.h"
@@ -12,13 +13,13 @@ class SDL_Window;
 class Application
 {
 public:
-    Application(const std::string &&title, const int &&width, const int &&height);
+    Application(std::string title, int width, int height);
     bool init();
     void run();
     void cleanup();
 
 private:
-    void process_events(SDL_Event *e);
+    void process_events(SDL_Event &e);
     void update(Map &map);
 
     const std::string title;
@@ -29,8 +30,8 @@ private:
 
     Simulation simulation;
     Renderer renderer;
+    UI *ui;
 
     InputState input_state;
 
-    UI *ui;
 };

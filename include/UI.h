@@ -11,12 +11,13 @@ public:
     UI() = delete;
 
     UI(SDL_Window *window, SDL_Renderer *renderer);
+    ~UI();
 
     void draw_and_process(InputState &is);
 
-    void process_events(SDL_Event *e);
+    void process_events(SDL_Event &e);
 
-    int get_current_tile();
+    int get_current_tile() const;
 
 private:
     SDL_Window *window;

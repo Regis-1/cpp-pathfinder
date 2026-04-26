@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include "InputState.h"
 
 #include <cassert>
 
@@ -6,7 +7,7 @@ namespace
 {
     float manhattan_hfn(const Coord& node, const Coord& goal)
     {
-        return 0.0f;
+        return std::abs(node.row - goal.row) + std::abs(node.col - goal.col);
     }
 }
 

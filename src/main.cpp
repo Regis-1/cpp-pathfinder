@@ -2,7 +2,7 @@
 
 int main()
 {
-    Application app("Pathfinder", 640, 480);
+    Application app("Pathfinder", 1024, 768);
 
     if (app.init() == false)
     {

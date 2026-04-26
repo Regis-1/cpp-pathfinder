@@ -4,13 +4,7 @@
 #include <vector>
 #include <string>
 
-enum class NodeType
-{
-    Empty,
-    Wall,
-    Start,
-    Goal
-};
+#include "NodeType.h"
 
 struct Coord
 {

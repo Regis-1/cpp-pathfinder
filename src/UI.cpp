@@ -1,5 +1,5 @@
 #include "UI.h"
-#include "Simulation.h"
+#include "InputState.h"
 
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
@@ -7,6 +7,7 @@
 
 namespace
 {
+    constexpr int VISIBLE_ITEMS = 4;
     const char* items[] = { "Wall", "Start", "Goal" };
 
     void HelpMarker(const char* desc)
@@ -38,10 +39,15 @@ UI::UI(SDL_Window *window, SDL_Renderer *renderer)
 
 }
 
+UI::~UI()
+{
+    ImGui_ImplSDLRenderer3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
+}
+
 void UI::draw_and_process(InputState &is)
 {
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -52,13 +58,13 @@ void UI::draw_and_process(InputState &is)
     }
 
     {
-        ImGui::Begin("Controls", NULL, ImGuiWindowFlags_NoCollapse |
+        ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoCollapse |
                      ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::Text("Tile selection:");
         ImGui::ListBox("##tile_selection_list", &this->item_current,
-                       items, IM_COUNTOF(items), 4);
+                       items, IM_COUNTOF(items), VISIBLE_ITEMS);
 
         ImGui::SameLine(); HelpMarker("LMB - place tile\nRMB - clear tile");
 
@@ -73,10 +79,12 @@ void UI::draw_and_process(InputState &is)
 
         if (ImGui::Button("Clear all", ImVec2(-1, 0)))
         {
+            //TODO
         }
 
         if (ImGui::Button("Clear path", ImVec2(-1, 0)))
         {
+            //TODO
         }
 
         ImGui::Spacing();
@@ -91,12 +99,12 @@ void UI::draw_and_process(InputState &is)
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), this->renderer);
 }
 
-void UI::process_events(SDL_Event *e)
+void UI::process_events(SDL_Event &e)
 {
-    ImGui_ImplSDL3_ProcessEvent(e);
+    ImGui_ImplSDL3_ProcessEvent(&e);
 }
 
-int UI::get_current_tile()
+int UI::get_current_tile() const
 {
     return this->item_current;
 }
