@@ -1,5 +1,5 @@
 #include "UI.h"
-#include "InputState.h"
+#include "Command.h"
 
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
@@ -37,6 +37,7 @@ UI::UI(SDL_Window *window, SDL_Renderer *renderer)
 
     ImGui_ImplSDLRenderer3_Init(this->renderer);
 
+    this->io = &ImGui::GetIO();
 }
 
 UI::~UI()
@@ -46,7 +47,7 @@ UI::~UI()
     ImGui::DestroyContext();
 }
 
-void UI::draw_and_process(InputState &is)
+void UI::draw_and_process(Command *&command)
 {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -74,7 +75,7 @@ void UI::draw_and_process(InputState &is)
 
         if (ImGui::Button("Run simulation", ImVec2(-1, 0)))
         {
-            is.simulation_run = true;
+            command = new StartSimulationCommand();
         }
 
         if (ImGui::Button("Clear all", ImVec2(-1, 0)))
@@ -107,4 +108,9 @@ void UI::process_events(SDL_Event &e)
 int UI::get_current_tile() const
 {
     return this->item_current;
+}
+
+bool UI::want_capture_mouse() const
+{
+    return this->io->WantCaptureMouse;
 }

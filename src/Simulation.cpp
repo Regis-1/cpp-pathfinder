@@ -1,7 +1,8 @@
 #include "Simulation.h"
-#include "InputState.h"
+#include "Command.h"
 
 #include <cassert>
+#include <cmath>
 
 namespace
 {
@@ -11,9 +12,8 @@ namespace
     }
 }
 
-Simulation::Simulation()
-    : map("starter_map.txt", 32, 4), running(false), path_computed(false),
-      pf(nullptr)
+Simulation::Simulation(Map &&map)
+    : map(std::move(map)), running(false), pf(nullptr)
 {
     this->pf = new Pathfinder(this->map, manhattan_hfn);
 }
@@ -23,87 +23,24 @@ Simulation::~Simulation()
     delete pf;
 }
 
-void Simulation::process_input(InputState &is)
+void Simulation::apply_command(Command *&command)
 {
-    if (is.mouse_button_down)
+    if (command)
     {
-        if ((is.selected_tile_type == NodeType::Start && this->map.is_start_set()) ||
-            (is.selected_tile_type == NodeType::Goal && this->map.is_goal_set()))
-        {
-            is.mouse_button_down = false;
-            return;
-        }
+        command->execute(*this);
 
-        int x = static_cast<int>(is.x);
-        int y = static_cast<int>(is.y);
-
-        int segment_size = this->map.get_tile_size() + this->map.get_tile_offset();
-        int local_x = x % segment_size;
-        int local_y = y % segment_size;
-
-        if (in_boundries(x, y) &&
-            (local_x < this->map.get_tile_size() || local_y < this->map.get_tile_size()))
-        {
-            int idx = this->map.to_index(Coord{y / segment_size,
-                                               x / segment_size});
-
-            NodeType prev_type = this->map[idx];
-
-            this->map[idx] = is.selected_tile_type;
-
-            if (prev_type == NodeType::Start)
-            {
-                this->map.set_start(false);
-            }
-            else if (prev_type == NodeType::Goal)
-            {
-                this->map.set_goal(false);
-            }
-
-            if (is.selected_tile_type == NodeType::Start)
-            {
-                this->map.set_start(true);
-            }
-            else if (is.selected_tile_type == NodeType::Goal)
-            {
-                this->map.set_goal(true);
-            }
-
-        }
-
-        if (!this->path.empty())
-        {
-            this->path.clear();
-        }
-
-        is.mouse_button_down = false;
-    }
-
-    if (is.simulation_run)
-    {
-        is.simulation_run = false;
-
-        if (!this->map.is_start_set() || !this->map.is_goal_set())
-        {
-            return;
-        }
-
-        Endpoints ep = this->find_start_and_goal();
-
-        this->pf->set_points(ep.start, ep.goal);
-
-        this->running = true;
+        delete command;
+        command = nullptr;
     }
 }
 
 void Simulation::update()
 {
-    if (this->running)// && !this->path_computed)
+    if (this->running)
     {
         this->path = this->pf->a_star();
         this->pf->reset();
 
-        //this->path_computed = true;
         this->running = false;
     }
 }
@@ -116,6 +53,89 @@ const Map& Simulation::get_map() const
 const std::vector<int>& Simulation::get_path() const
 {
     return this->path;
+}
+
+void Simulation::set_tile_pixels(float x, float y, NodeType type)
+{
+    int xi = static_cast<int>(std::floor(x));
+    int yi = static_cast<int>(std::floor(y));
+
+    if (!in_boundries(xi, yi))
+    {
+        return;
+    }
+
+    const int tile_size = this->map.get_tile_size();
+    const int offset = this->map.get_tile_offset();
+    const int segment = tile_size + offset;
+
+    int local_x = xi % segment;
+    int local_y = yi % segment;
+
+    if (local_x >= tile_size || local_y >= tile_size)
+    {
+        return;
+    }
+
+    int col = xi / segment;
+    int row = yi / segment;
+
+    set_tile_coord(Coord{row, col}, type);
+}
+
+void Simulation::set_tile_coord(Coord pos, NodeType type)
+{
+    int idx = this->map.to_index(pos);
+    NodeType prev = this->map[idx];
+
+    if ((type == NodeType::Start && this->map.is_start_set()) ||
+        (type == NodeType::Goal && this->map.is_goal_set()))
+    {
+        return;
+    }
+
+    if (prev == type)
+    {
+        return;
+    }
+
+    this->map[idx] = type;
+
+    if (prev == NodeType::Start)
+    {
+        this->map.set_start(false);
+    }
+
+    if (prev == NodeType::Goal)
+    {
+        this->map.set_goal(false);
+    }
+
+    if (type == NodeType::Start)
+    {
+        this->map.set_start(true);
+    }
+
+    if (type == NodeType::Goal)
+    {
+        this->map.set_goal(true);
+    }
+
+    this->path.clear();
+}
+
+void Simulation::start_simulation()
+{
+    if (!this->map.is_start_set() || !this->map.is_goal_set())
+    {
+        return;
+    }
+
+    Endpoints ep = this->find_start_and_goal();
+
+    this->pf->set_points(ep.start, ep.goal);
+
+    this->running = true;
 }
 
 const bool Simulation::in_boundries(const int x, const int y) const

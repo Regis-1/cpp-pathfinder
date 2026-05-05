@@ -2,8 +2,6 @@
 
 #include "Application.h"
 
-#include <unordered_map>
-
 namespace
 {
     constexpr int PATH_PADDING = 8;
@@ -63,8 +61,10 @@ namespace
 Application::Application(std::string title, int width, int height)
     : title(std::move(title)), screen_width(width), screen_height(height),
       renderer(this->simulation.get_map().get_tile_size()),
+      simulation(Map("starter_map.txt", 32, 4)),
       ui(nullptr),
-      input_state({0, 0, NodeType::Empty, false, false, false})
+      command(nullptr),
+      should_exit(false)
 {}
 
 bool Application::init()
@@ -108,15 +108,15 @@ void Application::run()
 {
     SDL_Event event;
 
-    while (!input_state.exit)
-    {
-        const Map &map_ref = this->simulation.get_map();
+    const Map &map_ref = this->simulation.get_map();
 
+    while (!this->should_exit)
+    {
         // PROCESSING EVENTS / INPUT
         process_events(event);
-        this->simulation.process_input(this->input_state);
 
         // UPDATING
+        this->simulation.apply_command(this->command);
         this->simulation.update();
 
         // RENDERING
@@ -130,7 +130,7 @@ void Application::run()
                       this->renderer);
         }
 
-        this->ui->draw_and_process(this->input_state);
+        this->ui->draw_and_process(this->command);
 
         this->renderer.render();
     }
@@ -139,6 +139,11 @@ void Application::run()
 void Application::cleanup()
 {
     delete this->ui;
+
+    if (this->command)
+    {
+        delete this->command;
+    }
 
     SDL_DestroyWindow(this->window);
 
@@ -149,27 +154,33 @@ void Application::process_events(SDL_Event &e)
 {
     while (SDL_PollEvent(&e))
     {
-        ui->process_events(e);
+        this->ui->process_events(e);
 
         if (e.type == SDL_EVENT_QUIT)
         {
-            this->input_state.exit = true;
+            this->should_exit = true;
+        }
+
+        if (this->ui->want_capture_mouse())
+        {
+            continue;
         }
 
         else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
         {
-            this->input_state.mouse_button_down = true;
-            this->input_state.x = e.button.x;
-            this->input_state.y = e.button.y;
+            NodeType type;
 
             if (e.button.button == SDL_BUTTON_LEFT)
             {
-                this->input_state.selected_tile_type = static_cast<NodeType>(this->ui->get_current_tile() + 1);
+                type = static_cast<NodeType>(this->ui->get_current_tile() + 1);
             }
-            else if (e.button.button == SDL_BUTTON_RIGHT)
+            else if(e.button.button == SDL_BUTTON_RIGHT)
             {
-                this->input_state.selected_tile_type = NodeType::Empty;
+                type = NodeType::Empty;
             }
+
+
+            this->command = new SetTileCommand(e.button.x, e.button.y, type);
         }
     }
 }

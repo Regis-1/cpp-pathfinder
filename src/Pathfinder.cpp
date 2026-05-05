@@ -89,7 +89,6 @@ std::vector<int> Pathfinder::a_star()
     return path;
 }
 
-
 bool Pathfinder::a_star_step() // NOT IMPLEMENTED YET!
 {
     return false;

@@ -47,6 +47,13 @@ Map::Map(const std::string &&path, int tile_size, int tile_offset)
     load_map_from_file(path, this->width, this->height, this->nodes);
 }
 
+Map::Map(Map &&starter_map)
+    : nodes(std::move(starter_map.nodes)),
+      width(starter_map.width), height(starter_map.height),
+      tile_size(starter_map.tile_size), tile_offset(starter_map.tile_offset),
+      start_set(starter_map.start_set), goal_set(starter_map.goal_set)
+{}
+
 Coord Map::to_coord(const int index) const
 {
     return Coord{index / this->width, index % this->width};

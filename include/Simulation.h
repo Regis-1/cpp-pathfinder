@@ -2,7 +2,7 @@
 
 #include "Pathfinder.h"
 
-struct InputState;
+class Command;
 
 struct Endpoints {
     Coord start;
@@ -12,13 +12,19 @@ struct Endpoints {
 class Simulation
 {
 public:
-    Simulation();
+    Simulation(Map &&map);
     ~Simulation();
 
-    void process_input(InputState &is);
+    void apply_command(Command *&command);
     void update();
     const Map& get_map() const;
     const std::vector<int>& get_path() const;
+
+    void set_tile_pixels(float x, float y, NodeType type);
+    void set_tile_coord(Coord pos, NodeType type);
+
+    void start_simulation();
+
 
 private:
     const bool in_boundries(const int x , const int y) const;
@@ -31,5 +37,4 @@ private:
     std::vector<int> path;
 
     bool running;
-    bool path_computed;
 };

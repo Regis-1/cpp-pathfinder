@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "InputState.h"
 #include "Renderer.h"
 #include "Simulation.h"
 #include "UI.h"
+#include "Command.h"
 
 union SDL_Event;
 class SDL_Window;
@@ -22,16 +22,18 @@ private:
     void process_events(SDL_Event &e);
     void update(Map &map);
 
+    SDL_Window *window;
+
+    Renderer renderer;
+    Simulation simulation;
+
+    UI *ui;
+
+    Command *command;
+
     const std::string title;
     const int screen_width;
     const int screen_height;
 
-    SDL_Window *window;
-
-    Simulation simulation;
-    Renderer renderer;
-    UI *ui;
-
-    InputState input_state;
-
+    bool should_exit;
 };
